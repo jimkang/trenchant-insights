@@ -1,0 +1,88 @@
+
+
+~/gcw/autocompl ⮀ master● ⮀ 0m ⮀ node run-autocompl.js "why is meat"                                                            ⮂
+[ 'why is meat bad for you',
+  'why is meat good for you',
+  'why is meat red',
+  'why is meat important',
+  'why is meat so good',
+  'why is meat red in stores',
+  'why is meat healthy',
+  'why is meat cooked',
+  'why is meat expensive',
+  'why is meat so cheap' ]
+ ~/gcw/autocompl ⮀ master● ⮀ 2m ⮀ node run-autocompl.js "if meat is"                                                             ⮂
+[ 'if meat is a little brown is it bad',
+  'if meat is brown',
+  'if meat is tough is it overcooked',
+  'if meat is smoked is it cooked',
+  'if meat is slimy is it bad',
+  'if meat is too salty',
+  'if meat is grey is it bad',
+  'if meat is frozen how long is it good for',
+  'if meat is use or freeze by',
+  'if meat is expired but frozen' ]
+ ~/gcw/autocompl ⮀ master● ⮀ 2m ⮀ "if meat is tough is it overcooked, then"                                                      ⮂
+zsh: command not found: if meat is tough is it overcooked, then
+ ~/gcw/autocompl ⮀ master● ⮀ 3m ⮀ node run-autocompl.js "if meat is tough is it overcooked then"                                 ⮂
+[]
+ ~/gcw/autocompl ⮀ master● ⮀ 3m ⮀ "meat is a kind of"                                                                            ⮂
+zsh: command not found: meat is a kind of
+ ~/gcw/autocompl ⮀ master● ⮀ 3m ⮀ node run-autocompl.js "meat is a kind of"                                                      ⮂
+[ 'meat is a kind of cheese',
+  '____ beef is a kind of ____ meat',
+  'cheese is a kind of meat lyrics',
+  'cheese is a kind of meat episode',
+  'cheese is a kind of meat mighty boosh',
+  'is fish a kind of meat',
+  'cheese is a kind of meat a tasty yellow treat',
+  'is chicken a kind of meat',
+  'what kind of meat is a gyro',
+  'what kind of meat is a pot roast' ]
+ ~/gcw/autocompl ⮀ master● ⮀ 6m ⮀ node run-autocompl.js "why is jambon"                                                          ⮂
+[]
+ ~/gcw/autocompl ⮀ master● ⮀ 6m ⮀ node run-autocompl.js "if jambon is"                                                           ⮂
+[]
+ ~/gcw/autocompl ⮀ master● ⮀ 6m ⮀ node run-autocompl.js "if jambon"                                                              ⮂
+[]
+ ~/gcw/autocompl ⮀ master● ⮀ 6m ⮀ node run-autocompl.js "jambon"                                                                 ⮂
+[ 'jambonewspot',
+  'jambon',
+  'jawbone',
+  'jambonews',
+  'jawbone up',
+  'jawbone up24',
+  'jawbone up3',
+  'jambon de paris',
+  'jampong',
+  'jambon beurre' ]
+ ~/gcw/autocompl ⮀ master● ⮀ 6m ⮀ node run-autocompl.js "why is Acheulian"                                                       ⮂
+[]
+ ~/gcw/autocompl ⮀ master● ⮀ 7m ⮀ node run-autocompl.js "why is Sikhism"                                                         ⮂
+[ 'why is sikhism wrong',
+  'why is sikhism a universalizing religion',
+  'why is sikhism important',
+  'why is sikhism unique',
+  'why is sikhism different to other religions',
+  'why is sikhism the true religion',
+  'why is sikhism called sikhism',
+  'why is sikhism better than islam',
+  'why is sikhism a good religion',
+  'why is sikhism so important' ]
+ ~/gcw/autocompl ⮀ master● ⮀ 7m ⮀ node run-autocompl.js "Sikhism is a kind of"                                                   ⮂
+[]
+ ~/gcw/autocompl ⮀ master● ⮀ 7m ⮀ node run-autocompl.js "Sikhism is"                                                             ⮂
+[ 'sikhism islam',
+  'sikhism is a blend of what two religions',
+  'sikhism is a polytheistic religion',
+  'sikhism islam similarities',
+  'sikhism islam and hinduism',
+  'sikhism is characterized by',
+  'sikhism is bullshit',
+  'sikhism is a blend of hinduism and islam',
+  'sikhism is',
+  'sikhism issues' ]
+
+  If sikhism is wrong, then why is it islam?
+  If sikhism is a universalizing religion, then why is it a blend of what two religions?
+
