@@ -8,7 +8,8 @@ function makeNode(baseConceptUri, primaryEdge) {
     vector: {
       rel: primaryEdge.rel,
       start: normalizeURI(startConceptUri),
-      end: normalizeURI(endConceptUri)
+      end: normalizeURI(endConceptUri),
+      surfaceText: primaryEdge.surfaceText
     },
     newConcept: normalizeURI(notX(baseConceptUri, [startConceptUri, endConceptUri]))
   };
