@@ -19,14 +19,16 @@ var conceptNet = new ConceptNet('conceptnet5.media.mit.edu', 80, '5.3');
 
 var lookupOpts = {
   filter: 'core',
-  limit: 100
+  limit: 200
 };
 
 async.waterfall(
   [
     lookUpRootConcept,
-    getJudgeableEdges,
-    getPrimaryEdgeEndJudgmentPaths,
+    passBackEdges,
+    buildPathsFromPrimaryEdges,
+    // getJudgeableEdges,
+    // getPrimaryEdgeEndJudgmentPaths,
     logConceptInfo    
   ],
   conclude
@@ -36,18 +38,22 @@ function lookUpRootConcept(done) {
   conceptNet.lookup(rootConceptUri, lookupOpts, done);
 }
 
-function getJudgeableEdges(concept, done) {
-  var filtered = edgeFilters.filterToJudgeableEdges(
-    concept.edges, rootConceptUri
-  );
-  callBackOnNextTick(done, null, filtered);
+function passBackEdges(concept, done) {
+  callBackOnNextTick(done, null, concept.edges);
 }
 
-function getPrimaryEdgeEndJudgmentPaths(primaryEdges, done) {
-  async.mapLimit(primaryEdges, 4, getPrimaryEdgeEndJudgmentPath, done);
+// function getJudgeableEdges(concept, done) {
+//   var filtered = edgeFilters.filterToJudgeableEdges(
+//     concept.edges, rootConceptUri
+//   );
+//   callBackOnNextTick(done, null, filtered);
+// }
+
+function buildPathsFromPrimaryEdges(primaryEdges, done) {
+  async.mapLimit(primaryEdges, 4, buildPathsFromPrimaryEdge, done);
 }
 
-function getPrimaryEdgeEndJudgmentPath(primaryEdge, done) {
+function buildPathsFromPrimaryEdge(primaryEdge, done) {
   conceptNet.lookup(primaryEdge.end, lookupOpts, lookupDone);
 
   function lookupDone(error, secondaryConcept) {
@@ -68,6 +74,7 @@ function logConceptInfo(info) {
   // console.log(_.pluck(info, 'end'));
   // console.log(_.pluck(info, 'edges'));
   console.log(JSON.stringify(info, null, '  '));
+  console.log('Path count:', info.length);
 }
 
 function logEdge(edge) {

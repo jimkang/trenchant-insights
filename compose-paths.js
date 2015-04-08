@@ -5,9 +5,6 @@ function composePaths(rootConceptUri, primaryEdge, secondaryEdges) {
   var startConceptUri = primaryEdge.start;
   var endConceptUri = primaryEdge.end;
 
-  // var secondaryJudgeableEdges = edgeFilters.filterToJudgeableEdges(
-  //   secondaryEdges, endConceptUri
-  // );
   secondaryEdges = edgeFilters.filterConceptOutOfEdges(
     secondaryEdges, rootConceptUri
   );
