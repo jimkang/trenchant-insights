@@ -28,7 +28,11 @@ function prefixWithRelPath(rel) {
 }
 
 function edgeIsJudgeable(edge) {
-  return edge.rel && judgeableRelTypes.indexOf(edge.rel) !== -1;
+  return edge.rel && relationIsJudgeable(edge.rel);
+}
+
+function relationIsJudgeable(rel) {
+  return judgeableRelTypes.indexOf(rel) !== -1;
 }
 
 function filterConceptOutOfEdges(edges, conceptUri) {
@@ -39,7 +43,26 @@ function filterConceptOutOfEdges(edges, conceptUri) {
   }
 }
 
+var opposingRelTypes = [
+  'Antonym',
+  'NotIsA',
+  'NotUsedFor',
+  'NotCapableOf',
+  'NotHasProperty'
+]
+.map(prefixWithRelPath);
+
+function filterToOpposites(edges) {
+  return edges.filter(edgeIsAnOpposite);
+}
+
+function edgeIsAnOpposite(edge) {
+  return opposingRelTypes.indexOf(edge.rel) !== -1;
+}
+
 module.exports = {
   filterToJudgeableEdges: filterToJudgeableEdges,
-  filterConceptOutOfEdges: filterConceptOutOfEdges
+  filterConceptOutOfEdges: filterConceptOutOfEdges,
+  relationIsJudgeable: relationIsJudgeable,
+  filterToOpposites: filterToOpposites
 };
