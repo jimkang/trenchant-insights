@@ -13,6 +13,7 @@ if (!rootConceptName) {
   process.exit();
 }
 
+var rootConceptUri = '/c/en/' + rootConceptName;
 var conceptNet = new ConceptNet('conceptnet5.media.mit.edu', 80, '5.3');
 
 var lookupOpts = {
@@ -31,12 +32,12 @@ async.waterfall(
 );
 
 function lookUpRootConcept(done) {
-  conceptNet.lookup('/c/en/' + rootConceptName, lookupOpts, done);
+  conceptNet.lookup(rootConceptUri, lookupOpts, done);
 }
 
 function getJudgeableEdges(concept, done) {
   var filtered = edgeFilters.filterToJudgeableEdges(
-    concept.edges, '/c/en/' + rootConceptName
+    concept.edges, rootConceptUri
   );
   callBackOnNextTick(done, null, filtered);
 }
@@ -65,25 +66,46 @@ function composeJudgementPath(primaryEdge, secondaryEdges) {
   var startConceptUri = primaryEdge.start;
   var endConceptUri = primaryEdge.end;
 
-  var tertiaryJudgeableEdges = edgeFilters.filterToJudgeableEdges(
+  var secondaryJudgeableEdges = edgeFilters.filterToJudgeableEdges(
     secondaryEdges, endConceptUri
   );
-  tertiaryJudgeableEdges = edgeFilters.filterConceptOutOfEdges(
-    secondaryEdges, '/c/en/' + rootConceptName
+  secondaryJudgeableEdges = edgeFilters.filterConceptOutOfEdges(
+    secondaryEdges, rootConceptUri
   );
 
-  return [
+  var pathBase = [
     {
-      root: rootConceptName,
-      rel: primaryEdge.rel,
-      start: startConceptUri,
-      end: endConceptUri
+      newConcept: rootConceptUri
     },
     {
-      conceptUri: endConceptUri,
-      judgeableEdges: tertiaryJudgeableEdges
+      vector: {
+        rel: primaryEdge.rel,
+        start: startConceptUri,
+        end: endConceptUri
+      },
+      newConcept: notX(rootConceptUri, [startConceptUri, endConceptUri])
     }
   ];
+
+  var paths = secondaryJudgeableEdges.map(addToPath);
+  function addToPath(secondaryEdge) {
+    var path = _.cloneDeep(pathBase);
+    var pathNode = {
+      vector: _.pick(secondaryEdge, 'start', 'rel', 'end'),
+      newConcept: notX(
+        pathBase[1].newConcept, [secondaryEdge.start, secondaryEdge.end]
+      )
+    };
+    path.push(pathNode);
+    return path;
+  }
+
+  return paths;
+}
+
+// Assumes either pair[0] == x or pair[1] === x.
+function notX(x, pair) {
+  return (pair[0] === x) ? pair[1] : pair[0];
 }
 
 function logConceptInfo(info) {
