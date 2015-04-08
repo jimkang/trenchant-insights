@@ -45,10 +45,10 @@ function filterConceptOutOfEdges(edges, conceptUri) {
 
 var opposingRelTypes = [
   'Antonym',
-  'NotIsA',
-  'NotUsedFor',
-  'NotCapableOf',
-  'NotHasProperty'
+  // 'NotIsA',
+  // 'NotUsedFor',
+  // 'NotCapableOf',
+  // 'NotHasProperty'
 ]
 .map(prefixWithRelPath);
 

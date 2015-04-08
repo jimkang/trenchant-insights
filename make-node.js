@@ -7,10 +7,10 @@ function makeNode(baseConceptUri, primaryEdge) {
   return {
     vector: {
       rel: primaryEdge.rel,
-      start: startConceptUri,
-      end: endConceptUri
+      start: normalizeURI(startConceptUri),
+      end: normalizeURI(endConceptUri)
     },
-    newConcept: notX(baseConceptUri, [startConceptUri, endConceptUri])
+    newConcept: normalizeURI(notX(baseConceptUri, [startConceptUri, endConceptUri]))
   };
 }
 
@@ -18,5 +18,14 @@ function makeNode(baseConceptUri, primaryEdge) {
 function notX(x, pair) {
   return (pair[0] === x) ? pair[1] : pair[0];
 }
+
+function normalizeURI(uri) {
+  var parts = uri.split('/');
+  if (parts.length > 4) {
+    parts = parts.slice(0, 4);
+  }
+  return parts.join('/');
+}
+
 
 module.exports = makeNode;

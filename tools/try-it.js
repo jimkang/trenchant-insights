@@ -28,18 +28,18 @@ var oppositeGetter = createOppositeGetter({
   lookupOpts: lookupOpts
 });
 
-async.waterfall(
+async.series(
   [
-    lookUpRootConcept,
-    getEdgesFromConcept,
-    buildRootConnectedNodes,
+    buildPrimaryNodes,
     // buildPathsFromPrimaryEdges,
     storeJudgeableNodes,
-    addJudgeableProperties,
-    searchRootConnectedNodesForOppositesOfJudgeables,
+    storeOppositesOfJudgeables,
+    // addJudgeableProperties,
+    // searchRootConnectedNodesForOppositesOfJudgeables,
     // getJudgeableEdges,
     // getPrimaryEdgeEndJudgmentPaths,
-    logConceptInfo    
+    searchRootConnectedChildrenForOpposites,
+    logConceptInfo
   ],
   conclude
 );
@@ -47,8 +47,23 @@ async.waterfall(
 var searchState = {
   rootConceptUri: rootConceptUri,
   judgeableNodes: undefined,
-  rootConnectedNodes: undefined
+  rootConnectedNodes: undefined,
+  nodesForOppositeConcepts: {},
+  oppositePairs: [],
+  rootNodesCache: {},
+  oppositeNodesCache: {}
 };
+
+function buildPrimaryNodes(done) {
+  async.waterfall(
+    [
+      lookUpRootConcept,
+      getEdgesFromConcept,
+      buildRootConnectedNodes
+    ],
+    done
+  );
+}
 
 function lookUpRootConcept(done) {
   conceptNet.lookup(rootConceptUri, lookupOpts, done);
@@ -65,9 +80,10 @@ function getJudgeableEdges(primaryEdges, done) {
   callBackOnNextTick(done, null, filtered);
 }
 
-function storeJudgeableNodes(nodes, done) {
-  searchState.judgeableNodes = nodes.filter(nodeIsJudgeable);
-  callBackOnNextTick(done, null, searchState.judgeableNodes);
+function storeJudgeableNodes(done) {
+  searchState.judgeableNodes = searchState.rootConnectedNodes
+    .filter(nodeIsJudgeable);
+  callBackOnNextTick(done);
 }
 
 // Passes back paths.
@@ -82,44 +98,56 @@ function getLast(array) {
   }
 }
 
-function searchRootConnectedNodesForOppositesOfJudgeables(judgeables, done) {
-  var judgeableConcepts = _.pluck(_.flatten(_.pluck(judgeables, 'judgeableNodes')), 'newConcept');
-  console.log('judgeableConcepts', judgeableConcepts);
-  var rootConnectedIndex = 0;
+function searchRootConnectedChildrenForOpposites(done) {
+  var childIndex = 0;
+  var currentChildURI;
 
-  function runGetOpposites() {
-    oppositeGetter.getOpposites(
-      searchState.rootConnectedNodes[rootConnectedIndex],
-      checkOppositesForMatches
-    );
+  function runGetChildren() {
+    currentChildURI = searchState.rootConnectedNodes[childIndex].newConcept;
+    conceptNet.lookup(currentChildURI, lookupOpts, checkEdgesForMatches);
   }
 
-  function checkOppositesForMatches(error, opposingNodes) {
+  function checkEdgesForMatches(error, childConcept) {
     if (error) {
       done(error);
     }
     else {
-      var opposingConcepts = _.pluck(opposingNodes, 'newConcept');
-      console.log('opposingConcepts', opposingConcepts);
-      var matches = _.intersection(judgeableConcepts, opposingConcepts);      
+      var makeChildNode = _.curry(makeNode)(currentChildURI);
+      var childNodes = childConcept.edges.map(makeChildNode);
+      var childConceptURIs = _.pluck(childNodes, 'newConcept');
+      // console.log('childConceptURIs', childConceptURIs);
 
-      if (matches.length > 0) {
-        debugger;
-        done(error, matches); // TODO more context.
+      for (var i = 0; i < childConceptURIs.length; ++i) {
+        var uri = childConceptURIs[i];
+        if (uri in searchState.nodesForOppositeConcepts) {
+          var rootConnectedNode = searchState.nodesForOppositeConcepts[uri];
+          rootConnectedURI = rootConnectedNode.newConcept;
+          if (rootConnectedURI === currentChildURI) {
+            continue;
+          }
+          var oppositeNode = searchState.oppositeNodesCache[uri];
+          searchState.oppositePairs.push([
+            rootConnectedNode,
+            [
+              searchState.rootConnectedNodes[childIndex],
+              childNodes[i],
+              oppositeNode
+            ]
+          ]);
+        }
+      }
+
+      childIndex += 1;
+      if (childIndex < searchState.rootConnectedNodes.length) {
+        callBackOnNextTick(runGetChildren);
       }
       else {
-        rootConnectedIndex += 1;
-        if (rootConnectedIndex < searchState.rootConnectedNodes.length) {
-          callBackOnNextTick(runGetOpposites);
-        }
-        else {
-          done(error);
-        }
+        done(error);
       }
     }
   }
 
-  runGetOpposites();
+  runGetChildren();
 }
 
 
@@ -132,9 +160,38 @@ function nodeIsJudgeable(node) {
 }
 
 function buildRootConnectedNodes(primaryEdges, done) {
-  var madeNodeWithRoot = _.curry(makeNode)(rootConceptUri);
-  searchState.rootConnectedNodes = primaryEdges.map(madeNodeWithRoot);
+  var makeNodeWithRoot = _.curry(makeNode)(rootConceptUri);
+  searchState.rootConnectedNodes = primaryEdges.map(makeNodeWithRoot);
+  var cacheRootNode = _.curry(cacheNode)(searchState.rootNodesCache);
+  searchState.rootConnectedNodes.forEach(cacheRootNode);
   callBackOnNextTick(done, null, searchState.rootConnectedNodes);
+}
+
+function storeOppositesOfJudgeables(done) {
+  async.eachLimit(searchState.judgeableNodes, 4, storeOppositeOfNode, done);
+
+  function storeOppositeOfNode(node, storeDone) {
+    conceptNet.lookup(node.newConcept, lookupOpts, lookupDone);
+
+    function lookupDone(error, childConcept) {
+      if (error) {
+        storeDone(error);
+      }
+      else {
+        var judgeableEdges = edgeFilters.filterToOpposites(childConcept.edges);
+        judgeableEdges.forEach(storeOpposite);
+        storeDone(error);
+      }
+    }
+
+    function storeOpposite(edge) {
+      var oppositeNode = makeNode(node.newConcept, edge);
+      cacheNode(searchState.oppositeNodesCache, oppositeNode);
+      if (node.newConcept !== oppositeNode.newConcept) {
+        searchState.nodesForOppositeConcepts[oppositeNode.newConcept] = node;
+      }
+    }    
+  }
 }
 
 function addJudgeableProperties(judgeableNodes, done) {
@@ -179,13 +236,19 @@ function buildPathsFromPrimaryEdge(primaryEdge, done) {
   }
 }
 
+
+function cacheNode(cache, node) {
+  cache[node.newConcept] = node;
+}
+
 function logConceptInfo(info) {
   // info.forEach(logEdge);
   // console.log(_.pluck(info, 'end'));
   // console.log(_.pluck(info, 'edges'));
-  console.log(JSON.stringify(info, null, '  '));
-  console.log('Path count:', info.length);
-  console.log('Search state:', JSON.stringify(searchState, null, '  '));
+  // console.log(JSON.stringify(info, null, '  '));
+  // console.log('Path count:', info.length);
+  console.log('oppositePairs:', JSON.stringify(searchState.oppositePairs, null, '  '));
+  debugger;
 }
 
 function logEdge(edge) {
