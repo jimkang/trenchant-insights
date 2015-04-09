@@ -4,7 +4,6 @@ var _ = require('lodash');
 var callBackOnNextTick = require('conform-async').callBackOnNextTick;
 var edgeFilters = require('../edge-filters');
 var makeNode = require('../make-node');
-// var queue = require('queue-async');
 var createOppositeGetter = require('../opposite-getter').create;
 
 var cmdOpts = require('nomnom').parse();
@@ -33,10 +32,6 @@ async.series(
     buildPrimaryNodes,
     storeJudgeableNodes,
     storeOppositesOfJudgeables,
-    // addJudgeableProperties,
-    // searchRootConnectedNodesForOppositesOfJudgeables,
-    // getJudgeableEdges,
-    // getPrimaryEdgeEndJudgmentPaths,
     searchRootConnectedChildrenForOpposites,
     logConceptInfo
   ],
@@ -72,24 +67,11 @@ function getEdgesFromConcept(concept, done) {
   callBackOnNextTick(done, null, concept.edges);
 }
 
-function getJudgeableEdges(primaryEdges, done) {
-  var filtered = edgeFilters.filterToJudgeableEdges(
-    concept.edges, rootConceptUri
-  );
-  callBackOnNextTick(done, null, filtered);
-}
-
 function storeJudgeableNodes(done) {
   searchState.judgeableNodes = searchState.rootConnectedNodes
     .filter(nodeIsJudgeable);
   callBackOnNextTick(done);
 }
-
-// Passes back paths.
-// function storeAsRootConnectedNodes(paths, done) {
-//   searchState.rootConnectedNodes = paths.map(getLast);
-//   callBackOnNextTick(done, null, paths);
-// }
 
 function getLast(array) {
   if (array && array.length > 0) {
