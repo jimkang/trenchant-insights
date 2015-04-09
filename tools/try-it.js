@@ -206,6 +206,8 @@ function logConceptInfo(info) {
   // console.log(_.pluck(info, 'edges'));
   // console.log(JSON.stringify(info, null, '  '));
   // console.log('Path count:', info.length);
+  // console.log('oppositeNodesCache', JSON.stringify(searchState.oppositeNodesCache, null, '  '));
+
   console.log('oppositePairs:', JSON.stringify(searchState.oppositePairs, null, '  '));
   debugger;
 }

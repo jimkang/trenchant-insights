@@ -48,12 +48,39 @@ var opposingRelTypes = [
 ]
 .map(prefixWithRelPath);
 
+var falseAntonyms = [
+  ['eat', 'drink']
+]
+.map(prefixPairWithConceptPath);
+
+falseAntonyms = falseAntonyms.concat(falseAntonyms.map(reversePair));
+falseAntonyms = falseAntonyms.map(JSON.stringify);
+
+function reversePair(pair) {
+  return [pair[1], pair[0]];
+}
+
+function prefixPairWithConceptPath(pair) {
+  return pair.map(prefixWithConceptPath);
+}
+
+function prefixWithConceptPath(name) {
+  return '/c/en/' + name;
+}
+
 function filterToOpposites(edges) {
   return edges.filter(edgeIsAnOpposite);
 }
 
 function edgeIsAnOpposite(edge) {
-  return opposingRelTypes.indexOf(edge.rel) !== -1;
+  var isAnOpposite = (opposingRelTypes.indexOf(edge.rel) !== -1);
+
+  if (isAnOpposite) {
+    var pairKey = JSON.stringify([edge.start, edge.end]);
+    isAnOpposite = (falseAntonyms.indexOf(pairKey) === -1);
+  }
+
+  return isAnOpposite;
 }
 
 function filterNegativesOutOfEdges(edges, conceptUri) {
