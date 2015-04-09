@@ -163,7 +163,8 @@ function nodeIsJudgeable(node) {
 
 function buildRootConnectedNodes(primaryEdges, done) {
   var makeNodeWithRoot = _.curry(makeNode)(rootConceptUri);
-  searchState.rootConnectedNodes = primaryEdges.map(makeNodeWithRoot);
+  var filteredPrimaries = edgeFilters.filterNegativesOutOfEdges(primaryEdges);
+  searchState.rootConnectedNodes = filteredPrimaries.map(makeNodeWithRoot);
   var cacheRootNode = _.curry(cacheNode)(searchState.rootNodesCache);
   searchState.rootConnectedNodes.forEach(cacheRootNode);
   callBackOnNextTick(done, null, searchState.rootConnectedNodes);
@@ -180,16 +181,16 @@ function storeOppositesOfJudgeables(done) {
         storeDone(error);
       }
       else {
-        var judgeableEdges = edgeFilters.filterToOpposites(childConcept.edges);
-        judgeableEdges.forEach(storeOpposite);
+        var oppositeEdges = edgeFilters.filterToOpposites(childConcept.edges);
+        oppositeEdges.forEach(storeOpposite);
         storeDone(error);
       }
     }
 
     function storeOpposite(edge) {
       var oppositeNode = makeNode(node.newConcept, edge);
-      cacheNode(searchState.oppositeNodesCache, oppositeNode);
       if (node.newConcept !== oppositeNode.newConcept) {
+        cacheNode(searchState.oppositeNodesCache, oppositeNode);
         searchState.nodesForOppositeConcepts[oppositeNode.newConcept] = node;
       }
     }    
@@ -209,7 +210,6 @@ function logConceptInfo(info) {
   // console.log('oppositeNodesCache', JSON.stringify(searchState.oppositeNodesCache, null, '  '));
 
   console.log('oppositePairs:', JSON.stringify(searchState.oppositePairs, null, '  '));
-  debugger;
 }
 
 function logEdge(edge) {
