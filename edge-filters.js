@@ -24,6 +24,12 @@ var judgeableRelTypes = [
 ]
 .map(prefixWithRelPath);
 
+var deadEndRelations = [
+  'RelatedTo',
+  'Antonym'
+]
+.map(prefixWithRelPath);
+
 function prefixWithRelPath(rel) {
   return '/r/' + rel;
 }
@@ -34,6 +40,14 @@ function edgeIsJudgeable(edge) {
 
 function relationIsJudgeable(rel) {
   return judgeableRelTypes.indexOf(rel) !== -1;
+}
+
+function filterOutDeadEnds(edges) {
+  return edges.filter(edgeIsNotADeadEnd)
+}
+
+function edgeIsNotADeadEnd(edge) {
+  return deadEndRelations.indexOf(edge.rel) === -1;
 }
 
 function filterConceptOutOfEdges(edges, conceptUri) {
@@ -52,7 +66,8 @@ var opposingRelTypes = [
 
 var falseAntonyms = [
   ['eat', 'drink'],
-  ['age', 'young']
+  ['age', 'young'],
+  ['cauliflower', 'broccoli']
 ]
 .map(prefixPairWithConceptPath);
 
@@ -92,7 +107,7 @@ function edgeIsAnOpposite(edge) {
   return isAnOpposite;
 }
 
-function filterNegativesOutOfEdges(edges, conceptUri) {
+function filterNegativesOutOfEdges(edges) {
   return edges.filter(edgeIsNotANegative);
 }
 
@@ -100,14 +115,20 @@ function edgeIsNotANegative(edge) {
   return edge.rel.indexOf('/r/Not') !== 0;
 }
 
-// function filterOutDeadEnds(edges) {
-//   return edges.filter(edgeIsNotADeadEnd)
-// }
+function filterToEdgesThatStartWith(edges, conceptUri) {
+  return edges.filter(edgeHasConceptUriAtStart);
+
+  function edgeHasConceptUriAtStart(edge) {
+    return truncateURIToBareConcept(edge.start) === conceptUri;
+  }
+}
 
 module.exports = {
   filterToJudgeableEdges: filterToJudgeableEdges,
   filterConceptOutOfEdges: filterConceptOutOfEdges,
   relationIsJudgeable: relationIsJudgeable,
   filterToOpposites: filterToOpposites,
-  filterNegativesOutOfEdges: filterNegativesOutOfEdges
+  filterNegativesOutOfEdges: filterNegativesOutOfEdges,
+  filterOutDeadEnds: filterOutDeadEnds,
+  filterToEdgesThatStartWith: filterToEdgesThatStartWith
 };

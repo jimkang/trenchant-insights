@@ -105,7 +105,7 @@ function searchRootConnectedChildrenForOpposites(done) {
     currentChildURI = searchState.rootConnectedNodes[childIndex].newConcept;
     conceptNet.lookup(currentChildURI, lookupOpts, checkEdgesForMatches);
   }
-
+// TODO: Always make them use the ends of the edges.
   function checkEdgesForMatches(error, childConcept) {
     if (error) {
       done(error);
@@ -115,7 +115,11 @@ function searchRootConnectedChildrenForOpposites(done) {
       var nonNegativeEdges = edgeFilters.filterNegativesOutOfEdges(
         childConcept.edges
       );
-      var childNodes = nonNegativeEdges.map(makeChildNode);
+      var liveEndEdges = edgeFilters.filterOutDeadEnds(nonNegativeEdges);
+      liveEndEdges = edgeFilters.filterToEdgesThatStartWith(
+        liveEndEdges, currentChildURI
+      );
+      var childNodes = liveEndEdges.map(makeChildNode);
       var childConceptURIs = _.pluck(childNodes, 'newConcept');
       // console.log('childConceptURIs', childConceptURIs);
 
