@@ -203,7 +203,7 @@ function cacheNode(cache, node) {
   cache[node.newConcept] = node;
 }
 
-function logConceptInfo(info) {
+function logConceptInfo(done) {
   // info.forEach(logEdge);
   // console.log(_.pluck(info, 'end'));
   // console.log(_.pluck(info, 'edges'));
@@ -212,6 +212,8 @@ function logConceptInfo(info) {
   // console.log('oppositeNodesCache', JSON.stringify(searchState.oppositeNodesCache, null, '  '));
 
   console.log('oppositePairs:', JSON.stringify(searchState.oppositePairs, null, '  '));
+
+  callBackOnNextTick(done);
 }
 
 function logEdge(edge) {
@@ -222,4 +224,6 @@ function conclude(error) {
   if (error) {
     console.log(error);
   }
+  // TODO: Let go of whatever streams the client is holding.
+  process.exit();
 }
