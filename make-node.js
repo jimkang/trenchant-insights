@@ -1,4 +1,5 @@
 var _ = require('lodash');
+var truncateURIToBareConcept = require('./truncate-uri-to-bare-concept');
 
 function makeNode(baseConceptUri, primaryEdge) {
   var startConceptUri = primaryEdge.start;
@@ -7,11 +8,13 @@ function makeNode(baseConceptUri, primaryEdge) {
   return {
     vector: {
       rel: primaryEdge.rel,
-      start: normalizeURI(startConceptUri),
-      end: normalizeURI(endConceptUri),
+      start: truncateURIToBareConcept(startConceptUri),
+      end: truncateURIToBareConcept(endConceptUri),
       surfaceText: primaryEdge.surfaceText
     },
-    newConcept: normalizeURI(notX(baseConceptUri, [startConceptUri, endConceptUri]))
+    newConcept: truncateURIToBareConcept(
+      notX(baseConceptUri, [startConceptUri, endConceptUri])
+    )
   };
 }
 
@@ -19,14 +22,5 @@ function makeNode(baseConceptUri, primaryEdge) {
 function notX(x, pair) {
   return (pair[0] === x) ? pair[1] : pair[0];
 }
-
-function normalizeURI(uri) {
-  var parts = uri.split('/');
-  if (parts.length > 4) {
-    parts = parts.slice(0, 4);
-  }
-  return parts.join('/');
-}
-
 
 module.exports = makeNode;
