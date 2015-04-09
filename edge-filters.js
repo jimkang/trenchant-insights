@@ -44,11 +44,7 @@ function filterConceptOutOfEdges(edges, conceptUri) {
 }
 
 var opposingRelTypes = [
-  'Antonym',
-  // 'NotIsA',
-  // 'NotUsedFor',
-  // 'NotCapableOf',
-  // 'NotHasProperty'
+  'Antonym'
 ]
 .map(prefixWithRelPath);
 
@@ -60,9 +56,18 @@ function edgeIsAnOpposite(edge) {
   return opposingRelTypes.indexOf(edge.rel) !== -1;
 }
 
+function filterNegativesOutOfEdges(edges, conceptUri) {
+  return edges.filter(edgeIsNotANegative);
+}
+
+function edgeIsNotANegative(edge) {
+  return edge.rel.indexOf('/r/Not') !== 0;
+}
+
 module.exports = {
   filterToJudgeableEdges: filterToJudgeableEdges,
   filterConceptOutOfEdges: filterConceptOutOfEdges,
   relationIsJudgeable: relationIsJudgeable,
-  filterToOpposites: filterToOpposites
+  filterToOpposites: filterToOpposites,
+  filterNegativesOutOfEdges: filterNegativesOutOfEdges
 };

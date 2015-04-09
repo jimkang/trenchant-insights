@@ -31,7 +31,6 @@ var oppositeGetter = createOppositeGetter({
 async.series(
   [
     buildPrimaryNodes,
-    // buildPathsFromPrimaryEdges,
     storeJudgeableNodes,
     storeOppositesOfJudgeables,
     // addJudgeableProperties,
@@ -113,7 +112,10 @@ function searchRootConnectedChildrenForOpposites(done) {
     }
     else {
       var makeChildNode = _.curry(makeNode)(currentChildURI);
-      var childNodes = childConcept.edges.map(makeChildNode);
+      var nonNegativeEdges = edgeFilters.filterNegativesOutOfEdges(
+        childConcept.edges
+      );
+      var childNodes = nonNegativeEdges.map(makeChildNode);
       var childConceptURIs = _.pluck(childNodes, 'newConcept');
       // console.log('childConceptURIs', childConceptURIs);
 
@@ -193,49 +195,6 @@ function storeOppositesOfJudgeables(done) {
     }    
   }
 }
-
-function addJudgeableProperties(judgeableNodes, done) {
-  async.mapLimit(judgeableNodes, 4, addJudgeablePropertiesToNode, done);
-}
-
-function addJudgeablePropertiesToNode(node, done) {
-  conceptNet.lookup(node.newConcept, lookupOpts, lookupDone);
-
-  function lookupDone(error, childConcept) {
-    if (error) {
-      done(error);
-    }
-    else {
-      var judgeableEdges = edgeFilters.filterToJudgeableEdges(
-        childConcept.edges
-      );
-      var makeChildNode = _.curry(makeNode)(node.newConcept);
-      node.judgeableNodes = judgeableEdges.map(makeChildNode);
-      done(error, node);
-    }
-  }
-}
-
-function buildPathsFromPrimaryEdges(primaryEdges, done) {
-  async.mapLimit(primaryEdges, 4, buildPathsFromPrimaryEdge, done);
-}
-
-function buildPathsFromPrimaryEdge(primaryEdge, done) {
-  conceptNet.lookup(primaryEdge.end, lookupOpts, lookupDone);
-
-  function lookupDone(error, secondaryConcept) {
-    if (error) {
-      done(error);
-    }
-    else {
-      done(
-        error,
-        composePaths(rootConceptUri, primaryEdge, secondaryConcept.edges)
-      );
-    }
-  }
-}
-
 
 function cacheNode(cache, node) {
   cache[node.newConcept] = node;
