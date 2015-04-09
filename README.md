@@ -1,4 +1,4 @@
-trenchant-insight
+trenchant-insights
 ==================
 
 This is a bot that does a thing.

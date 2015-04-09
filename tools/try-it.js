@@ -5,8 +5,15 @@ var callBackOnNextTick = require('conform-async').callBackOnNextTick;
 var edgeFilters = require('../edge-filters');
 var makeNode = require('../make-node');
 var createOppositeGetter = require('../opposite-getter').create;
+var createCachedConceptNet = require('../cached-conceptnet');
 
-var cmdOpts = require('nomnom').parse();
+var cmdOpts = require('nomnom')
+  .option('skipCache', {
+    abbr: 'skip-cache',
+    flag: true,
+    help: 'Set skip-cache to use ConceptNet directly and bypass cached results.'
+  })
+  .parse();
 
 var rootConceptName = cmdOpts[0];
 
@@ -15,7 +22,16 @@ if (!rootConceptName) {
 }
 
 var rootConceptUri = '/c/en/' + rootConceptName;
-var conceptNet = new ConceptNet('conceptnet5.media.mit.edu', 80, '5.3');
+
+var conceptNet;
+var rawConceptNet = new ConceptNet('conceptnet5.media.mit.edu', 80, '5.3');
+
+if (cmdOpts.skipCache) {
+  conceptNet = rawConceptNet;
+}
+else {
+  conceptNet = createCachedConceptNet(rawConceptNet);
+}
 
 var lookupOpts = {
   filter: 'core',
