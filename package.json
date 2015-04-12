@@ -26,6 +26,7 @@
     "conform-async": "^1.1.1",
     "level-cache-server": "^2.0.0",
     "lodash": "^3.6.0",
+    "multilevel-cache-tools": "^1.0.1",
     "nomnom": "^1.8.1",
     "twit": "^1.1.20"
   }
